@@ -1,5 +1,5 @@
 // src/client.ts
-import * as xmlrpc from 'xmlrpc';
+import xmlrpc from 'xmlrpc';
 
 import {
   OdooConfig,
@@ -8,8 +8,8 @@ import {
   SearchOptions,
   SearchReadOptions,
   OdooDomain,
-} from './types';
-import { OdooError, OdooAuthenticationError } from './errors';
+} from './types.js';
+import { OdooError, OdooAuthenticationError } from './errors.js';
 
 export class OdooClient {
   private common: xmlrpc.Client;
@@ -19,8 +19,17 @@ export class OdooClient {
 
   constructor(config: OdooConfig) {
     this.config = config;
-    this.common = xmlrpc.createClient(`${config.url}/xmlrpc/2/common`);
-    this.object = xmlrpc.createClient(`${config.url}/xmlrpc/2/object`);
+
+    const protocol = config.url.startsWith('https') ? 'https' : 'http';
+
+    const createClient = protocol === 'https' ? xmlrpc.createSecureClient : xmlrpc.createClient;
+
+    const clientOptions = {
+      agent: config.agent,
+    };
+
+    this.common = createClient({ ...clientOptions, url: `${config.url}/xmlrpc/2/common` });
+    this.object = createClient({ ...clientOptions, url: `${config.url}/xmlrpc/2/object` });
   }
 
   private methodCall<T>(client: xmlrpc.Client, method: string, params: any[]): Promise<T> {
@@ -125,8 +134,13 @@ export class OdooClient {
     return await this.execute(model, 'create', [values]);
   }
 
-  public async write<T extends object>(model: string, ids: number[], values: T): Promise<boolean> {
-    return await this.execute(model, 'write', [ids, values]);
+  public async write<T extends object>(
+    model: string,
+    ids: number[],
+    values: T,
+    options: SearchOptions = {},
+  ): Promise<boolean> {
+    return await this.execute(model, 'write', [ids, values], options);
   }
 
   public async unlink(model: string, ids: number[]): Promise<boolean> {

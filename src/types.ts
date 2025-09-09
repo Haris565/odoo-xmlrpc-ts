@@ -1,8 +1,12 @@
+import https from 'node:https';
+import http from 'node:http';
+
 export interface OdooConfig {
   url: string;
   db: string;
   username: string;
   password: string;
+  agent?: https.Agent | http.Agent;
 }
 
 export interface OdooVersion {
@@ -32,8 +36,13 @@ export interface SearchOptions {
   order?: string;
 }
 
+export interface SearchContext {
+  lang?: string;
+}
+
 export interface SearchReadOptions extends SearchOptions {
   fields?: string[];
+  context?: SearchContext
 }
 
 export type OdooDomain = Array<[string, string, any]>;

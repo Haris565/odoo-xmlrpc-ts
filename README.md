@@ -1,6 +1,12 @@
 # odoo-xmlrpc-ts
 
+[![npm version](https://badge.fury.io/js/odoo-xmlrpc-ts.svg)](https://www.npmjs.com/package/odoo-xmlrpc-ts)
+[![GitHub](https://img.shields.io/github/license/iraycd/odoo-xmlrpc-ts)](https://github.com/iraycd/odoo-xmlrpc-ts)
+[![GitHub stars](https://img.shields.io/github/stars/iraycd/odoo-xmlrpc-ts)](https://github.com/iraycd/odoo-xmlrpc-ts)
+
 A type-safe Odoo XML-RPC client for Node.js written in TypeScript. This package provides a robust interface to interact with Odoo's external API through XML-RPC.
+
+📦 **[npm package](https://www.npmjs.com/package/odoo-xmlrpc-ts)** | 🔗 **[GitHub repository](https://github.com/iraycd/odoo-xmlrpc-ts)**
 
 ## Features
 
@@ -94,6 +100,40 @@ async function example() {
 }
 ```
 
+### HTTP Agent Configuration
+
+You can configure custom HTTP agents for advanced network configurations such as custom SSL settings, or connection pooling:
+
+> **Note**: Odoo doesn't support HTTPS natively. For production deployments, place Odoo behind a reverse proxy (Nginx/Apache) with SSL termination. The agent configuration below is useful when connecting to such HTTPS-enabled Odoo instances.
+
+```typescript
+import { OdooClient } from 'odoo-xmlrpc-ts';
+import https from 'node:https';
+import fs from 'node:fs';
+
+// Example: Custom HTTPS agent with specific SSL options
+const httpsAgent = new https.Agent({
+  ca: fs.readFileSync('/path/to/ca-certificate.pem'), // Custom CA certificate
+  keepAlive: true,
+  maxSockets: 10,
+});
+
+// Alternative: For development/testing only (not recommended for production)
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false, // Disables SSL verification (use only for testing)
+  keepAlive: true,
+  maxSockets: 10,
+});
+
+const client = new OdooClient({
+  url: 'https://your-odoo-instance.com', // HTTPS URL (via reverse proxy)
+  db: 'your-database',
+  username: 'admin',
+  password: 'admin',
+  agent: httpsAgent,
+});
+```
+
 ### Advanced Usage
 
 ```typescript
@@ -146,6 +186,7 @@ const client = new OdooClient({
   db: string;     // Database name
   username: string;
   password: string;
+  agent?: https.Agent | http.Agent;  // Optional HTTP agent for custom network configuration
 });
 ```
 
@@ -277,6 +318,76 @@ If you're using this client in a browser environment, you might encounter CORS i
 ### Authentication Issues
 
 Make sure your Odoo instance has XML-RPC enabled and your user has the necessary access rights. For Odoo.sh or Odoo Online instances, you might need to whitelist your IP address.
+
+## Notes & Considerations
+
+### HTTPS/SSL Deployment
+- Odoo doesn't provide native HTTPS support (removed since ~v6.1)
+- Production deployments require a reverse proxy (Nginx/Apache) for SSL termination
+- Use `proxy_mode = 1` in Odoo configuration when behind a proxy
+- The HTTP agent configuration is useful for custom SSL certificates and corporate environments
+
+### XML-RPC vs JSON-RPC
+- This library uses Odoo's XML-RPC endpoints (`/xmlrpc/2/common`, `/xmlrpc/2/object`)
+- Odoo also provides JSON-RPC endpoints (`/jsonrpc`) - these are separate protocols
+- Both provide the same functionality; JSON-RPC is lighter weight
+- XML-RPC is well-documented with many examples and good TypeScript support
+
+## Contributors
+
+Thanks to all the amazing contributors who have made this project possible:
+
+<!-- ALL-CONTRIBUTORS-LIST:START -->
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/iraycd">
+        <img src="https://avatars.githubusercontent.com/u/1450984?v=4" width="100px;" alt="Ray Ch"/>
+        <br />
+        <sub><b>Ray Ch</b></sub>
+      </a>
+      <br />
+      <sub>29 contributions</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Haris565">
+        <img src="https://avatars.githubusercontent.com/u/64888353?v=4" width="100px;" alt="Haris565"/>
+        <br />
+        <sub><b>Haris565</b></sub>
+      </a>
+      <br />
+      <sub>3 contributions</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Xstoudi">
+        <img src="https://avatars.githubusercontent.com/u/2575182?v=4" width="100px;" alt="Xavier Stouder"/>
+        <br />
+        <sub><b>Xavier Stouder</b></sub>
+      </a>
+      <br />
+      <sub>1 contribution</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/vendethiel">
+        <img src="https://avatars.githubusercontent.com/u/199499?v=4" width="100px;" alt="ven"/>
+        <br />
+        <sub><b>ven</b></sub>
+      </a>
+      <br />
+      <sub>1 contribution</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/villalobos-05">
+        <img src="https://avatars.githubusercontent.com/u/71589059?v=4" width="100px;" alt="Daniel Villalobos"/>
+        <br />
+        <sub><b>Daniel Villalobos</b></sub>
+      </a>
+      <br />
+      <sub>1 contribution</sub>
+    </td>
+  </tr>
+</table>
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## License
 
